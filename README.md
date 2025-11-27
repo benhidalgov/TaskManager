@@ -1,73 +1,47 @@
-# React + TypeScript + Vite
+# 🚀 Enterprise Kanban Board
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Un gestor de tareas tipo Trello/Jira de alto rendimiento, construido con React, TypeScript y Supabase.
 
-Currently, two official plugins are available:
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=3ECF8E)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📸 Demo
 
-## React Compiler
+![Kanban Demo](https://via.placeholder.com/800x400?text=Insertar+GIF+o+Captura+de+Pantalla+Aqui)
+*(Puedes arrastrar tareas entre columnas, editar con doble clic y los cambios persisten en la nube)*
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 💡 Sobre el Proyecto
 
-## Expanding the ESLint configuration
+Esta aplicación no es solo una lista de tareas (To-Do list). Es una implementación completa de un **tablero Kanban interactivo** que resuelve problemas complejos de estado y persistencia en aplicaciones frontend modernas.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+El objetivo fue crear una experiencia de usuario (UX) fluida ("snappy") utilizando patrones de **Optimistic UI**, donde la interfaz responde instantáneamente mientras sincroniza datos en segundo plano con PostgreSQL.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### ✨ Características Clave
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Drag & Drop Fluido:** Implementado con `@hello-pangea/dnd` para una experiencia táctil y natural.
+- **Persistencia en la Nube:** Base de datos PostgreSQL gestionada por Supabase.
+- **Autenticación Segura:** Sistema de Login/Registro con Supabase Auth.
+- **Row Level Security (RLS):** Las tareas están protegidas a nivel de base de datos; cada usuario solo puede acceder y modificar su propia información.
+- **Edición Inline:** Doble clic para editar tareas al instante.
+- **Optimistic Updates:** La UI se actualiza antes de recibir la confirmación del servidor para eliminar la latencia percibida.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Stack Tecnológico
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+La arquitectura fue elegida priorizando escalabilidad y Developer Experience (DX):
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Tecnología | Rol | Justificación |
+|------------|-----|---------------|
+| **React + Vite** | Frontend | Velocidad de desarrollo y ecosistema maduro. |
+| **TypeScript** | Lenguaje | Tipado estricto para evitar errores en tiempo de ejecución (Type Safety). |
+| **Zustand** | Estado | Gestión de estado global atómica y ligera (vs el boilerplate de Redux). |
+| **Supabase** | Backend-as-a-Service | Base de datos PostgreSQL real + Auth + API instantánea. |
+| **TailwindCSS** | Estilos | Desarrollo rápido de UI responsiva y consistente. |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Instalación y Uso
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone [https://github.com/tu-usuario/enterprise-kanban.git](https://github.com/tu-usuario/enterprise-kanban.git)
+   cd enterprise-kanban
