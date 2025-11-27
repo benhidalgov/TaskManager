@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+    /* Fonts */
+    --font-sans: 'Poppins', sans-serif;
+    --font-display: 'Poppins', sans-serif;
+
+    /* Colors - Dark Neon Palette */
+    --color-brand: #8b5cf6;
+    --color-brand-hover: #7c3aed;
+    --color-brand-light: #a78bfa;
+    --color-brand-glow: #8b5cf6;
+
+    --color-accent: #d946ef;
+    --color-accent-hover: #c026d3;
+
+    --color-dark-bg: #050505;
+    --color-dark-surface: #121212;
+    --color-dark-card: #18181b;
+    --color-dark-border: #27272a;
+
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #52525b;
+
+    /* Shadows */
+    --shadow-neon: 0 0 20px -5px rgba(139, 92, 246, 0.5);
+    --shadow-neon-hover: 0 0 30px -5px rgba(139, 92, 246, 0.7);
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+
+    /* Gradients */
+    --image-gradient-brand: linear-gradient(to right, #8b5cf6, #d946ef);
+    --image-gradient-dark: linear-gradient(to bottom, #121212, #050505);
+
+    /* Animations */
+    --animate-float: float 6s ease-in-out infinite;
+
+    @keyframes float {
+        0% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+
+        100% {
+            transform: translateY(0px);
+        }
+    }
+}
+
+/* Utilities */
+@layer utilities {
+    .glass-dark {
+        @apply bg-dark-surface/80 backdrop-blur-md border border-dark-border;
+    }
+
+    .text-glow {
+        text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #050505;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+    }
+}
+
+/* Base styles */
+@layer base {
+    body {
+        @apply bg-dark-bg text-text-primary antialiased;
+    }
+
+    /* Global scrollbar override if needed, or just use custom-scrollbar class */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #050505;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+    }
+}
