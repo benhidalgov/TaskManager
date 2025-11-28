@@ -9,7 +9,9 @@ interface Props {
 }
 
 const TaskCard = ({ task, index }: Props) => {
-  const { deleteTask, updateTask, updateTaskPriority } = useKanbanStore();
+  const { deleteTask, updateTask, updateTaskPriority, profiles } = useKanbanStore();
+  
+  const assignee = profiles.find(p => p.id === task.assigneeId);
   
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(task.content);
@@ -182,8 +184,17 @@ const TaskCard = ({ task, index }: Props) => {
             </p>
           </div>
 
+          {/* Assignee Avatar */}
+          {assignee && (
+            <div className="absolute bottom-3 left-3" title={`Asignado a: ${assignee.email}`}>
+              <div className="w-6 h-6 rounded-full bg-brand/20 border border-brand flex items-center justify-center text-xs text-brand-light font-bold">
+                {assignee.email.substring(0, 2).toUpperCase()}
+              </div>
+            </div>
+          )}
+
           {/* Footer: Timestamp & Delete Button */}
-          <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
+          <div className="absolute bottom-3 right-3 flex items-center gap-3">
             {/* Timestamp */}
             <span className="text-xs text-text-tertiary font-medium">
               {task.createdAt ? formatDate(task.createdAt) : ''}

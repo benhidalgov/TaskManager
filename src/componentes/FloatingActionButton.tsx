@@ -2,22 +2,27 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { Priority } from "../types";
 
+import { useKanbanStore } from "../store";
+
 interface Props {
-  onCreateTask?: (content: string, priority: Priority, columnId: string) => void;
+  onCreateTask?: (content: string, priority: Priority, columnId: string, assigneeId?: string) => void;
 }
 
 const CreateTaskButton = ({ onCreateTask }: Props) => {
+  const { profiles } = useKanbanStore();
   const [showModal, setShowModal] = useState(false);
   const [taskContent, setTaskContent] = useState("");
   const [selectedPriority, setSelectedPriority] = useState<Priority>("medium");
   const [selectedColumn, setSelectedColumn] = useState("col-1");
+  const [selectedAssignee, setSelectedAssignee] = useState<string>("");
 
   const handleCreate = () => {
     if (taskContent.trim() && onCreateTask) {
-      onCreateTask(taskContent, selectedPriority, selectedColumn);
+      onCreateTask(taskContent, selectedPriority, selectedColumn, selectedAssignee || undefined);
       setTaskContent("");
       setSelectedPriority("medium");
       setSelectedColumn("col-1");
+      setSelectedAssignee("");
       setShowModal(false);
     }
   };
@@ -155,6 +160,31 @@ const CreateTaskButton = ({ onCreateTask }: Props) => {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Assignee Selection */}
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Asignar a (Opcional)
+              </label>
+              <select
+                value={selectedAssignee}
+                onChange={(e) => setSelectedAssignee(e.target.value)}
+                className="
+                  w-full p-3 rounded-xl
+                  bg-dark-surface border border-dark-border
+                  text-white
+                  focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20
+                  transition-all
+                "
+              >
+                <option value="">Sin asignar</option>
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.email} ({profile.role === 'admin' ? 'Jefe' : 'Colaborador'})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Actions */}

@@ -1,16 +1,18 @@
 import { create } from "zustand";
 import { supabase } from "./supabase";
-import type { Column, Task, Id, Toast, Priority } from "./types";
+import type { Column, Task, Id, Toast, Priority, Profile } from "./types";
 
 interface KanbanState {
   columns: Column[];
   tasks: Task[];
+  profiles: Profile[];
   isLoading: boolean;
   toasts: Toast[];
   addToast: (type: Toast['type'], message: string) => void;
   removeToast: (id: string) => void;
   fetchTasks: () => Promise<void>;
-  addTask: (columnId: Id, content: string, priority?: Priority) => Promise<void>;
+  fetchProfiles: () => Promise<void>;
+  addTask: (columnId: Id, content: string, priority?: Priority, assigneeId?: string) => Promise<void>;
   deleteTask: (id: Id) => Promise<void>;
   updateTask: (id: Id, newContent: string) => Promise<void>;
   updateTaskPriority: (id: Id, newPriority: Priority) => Promise<void>;
@@ -30,6 +32,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     { id: "col-3", title: "Terminado" },
   ],
   tasks: [],
+  profiles: [],
   isLoading: false,
   toasts: [],
 
@@ -63,6 +66,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       columnId: t.column_id,
       content: t.content,
       priority: t.priority,
+      assigneeId: t.assignee_id,
       createdAt: t.created_at,
       updatedAt: t.updated_at,
     }));
@@ -71,13 +75,14 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
   },
 
   // 2. Agregar Tarea
-  addTask: async (columnId, content, priority = 'medium') => {
+  addTask: async (columnId, content, priority = 'medium', assigneeId) => {
     const tempId = crypto.randomUUID();
     const newTask: Task = {
       id: tempId,
       columnId,
       content,
       priority,
+      assigneeId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -91,6 +96,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
         column_id: columnId,
         content,
         priority,
+        assignee_id: assigneeId,
       });
 
     if (error) {
@@ -225,5 +231,15 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
         set({ tasks: previousTasks });
       }
     }
+  },
+
+  // 6. Cargar Perfiles
+  fetchProfiles: async () => {
+    const { data, error } = await supabase.from("profiles").select("*");
+    if (error) {
+      console.error("Error cargando perfiles:", error);
+      return;
+    }
+    set({ profiles: data || [] });
   },
 }));

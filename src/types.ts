@@ -7,6 +7,7 @@ export interface Task {
     columnId: Id;
     content: string;
     priority?: Priority;
+    assigneeId?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -14,6 +15,12 @@ export interface Task {
 export interface Column {
     id: Id;
     title: string;
+}
+
+export interface Profile {
+    id: string;
+    email: string;
+    role: 'admin' | 'user';
 }
 
 export type ToastType = 'success' | 'error' | 'info';

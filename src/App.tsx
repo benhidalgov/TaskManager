@@ -9,7 +9,7 @@ import FloatingActionButton from "./componentes/FloatingActionButton";
 import { supabase } from "./supabase";
 
 function App() {
-  const { columns, tasks, moveTask, fetchTasks } = useKanbanStore();
+  const { columns, tasks, moveTask, fetchTasks, fetchProfiles } = useKanbanStore();
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -18,14 +18,20 @@ function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthLoading(false);
-      if (session) fetchTasks();
+      if (session) {
+        fetchTasks();
+        fetchProfiles();
+      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) fetchTasks();
+      if (session) {
+        fetchTasks();
+        fetchProfiles();
+      }
     });
 
     return () => subscription.unsubscribe();
