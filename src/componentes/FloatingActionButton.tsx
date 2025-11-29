@@ -2,22 +2,28 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { Priority } from "../types";
 
+import { useKanbanStore } from "../store";
+
 interface Props {
-  onCreateTask?: (content: string, priority: Priority, columnId: string) => void;
+  onCreateTask?: (content: string, priority: Priority, columnId: string, assigneeId?: string) => void;
+  isAdmin?: boolean;
 }
 
-const CreateTaskButton = ({ onCreateTask }: Props) => {
+const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
+  const { profiles } = useKanbanStore();
   const [showModal, setShowModal] = useState(false);
   const [taskContent, setTaskContent] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState<Priority>("medium");
+  const [selectedPriority, setSelectedPriority] = useState<Priority>("Medio");
   const [selectedColumn, setSelectedColumn] = useState("col-1");
+  const [selectedAssignee, setSelectedAssignee] = useState<string>("");
 
   const handleCreate = () => {
     if (taskContent.trim() && onCreateTask) {
-      onCreateTask(taskContent, selectedPriority, selectedColumn);
+      onCreateTask(taskContent, selectedPriority, selectedColumn, selectedAssignee || undefined);
       setTaskContent("");
-      setSelectedPriority("medium");
+      setSelectedPriority("Medio");
       setSelectedColumn("col-1");
+      setSelectedAssignee("");
       setShowModal(false);
     }
   };
@@ -131,7 +137,7 @@ const CreateTaskButton = ({ onCreateTask }: Props) => {
                 Prioridad
               </label>
               <div className="flex gap-3">
-                {(['high', 'medium', 'low'] as Priority[]).map((p) => (
+                {(['Alto', 'Medio', 'Bajo'] as Priority[]).map((p) => (
                   <button
                     key={p}
                     type="button"
@@ -140,8 +146,8 @@ const CreateTaskButton = ({ onCreateTask }: Props) => {
                       flex-1 flex items-center justify-center gap-2
                       px-4 py-2.5 rounded-lg text-sm font-medium transition-all border
                       ${selectedPriority === p 
-                        ? p === 'high' ? 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
-                        : p === 'medium' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.3)]'
+                        ? p === 'Alto' ? 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
+                        : p === 'Medio' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.3)]'
                         : 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                         : 'bg-dark-surface border-dark-border text-text-tertiary hover:text-white hover:border-text-tertiary'
                       }
@@ -149,13 +155,40 @@ const CreateTaskButton = ({ onCreateTask }: Props) => {
                   >
                     <div className={`
                       w-2 h-2 rounded-full
-                      ${p === 'high' ? 'bg-red-500' : p === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}
+                      ${p === 'Alto' ? 'bg-red-500' : p === 'Medio' ? 'bg-yellow-500' : 'bg-green-500'}
                     `} />
-                    {p === 'high' ? 'Alta' : p === 'medium' ? 'Media' : 'Baja'}
+                    {p === 'Alto' ? 'Alta' : p === 'Medio' ? 'Media' : 'Baja'}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Assignee Selection - Only for Admins */}
+            {isAdmin && (
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Asignar a (Opcional)
+                </label>
+                <select
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                  className="
+                    w-full p-3 rounded-xl
+                    bg-dark-surface border border-dark-border
+                    text-white
+                    focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20
+                    transition-all
+                  "
+                >
+                  <option value="">Sin asignar</option>
+                  {profiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.email} ({profile.role === 'admin' ? 'Jefe' : 'Colaborador'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-3 sticky bottom-0 bg-dark-card pt-4 border-t border-dark-border/50">

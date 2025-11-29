@@ -6,26 +6,37 @@ import Column from "./componentes/Column";
 import Login from "./componentes/login";
 import ToastContainer from "./componentes/ToastContainer";
 import FloatingActionButton from "./componentes/FloatingActionButton";
+import AdminPanel from "./componentes/AdminPanel";
+import TaskDetailModal from "./componentes/TaskDetailModal";
 import { supabase } from "./supabase";
 
 function App() {
-  const { columns, tasks, moveTask, fetchTasks } = useKanbanStore();
+  const { columns, tasks, moveTask, fetchTasks, fetchProfiles, profiles } = useKanbanStore();
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+
+  const isAdmin = session && profiles.find(p => p.email === session.user.email)?.role === 'admin';
 
   // 1. Efecto para manejar la sesión
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthLoading(false);
-      if (session) fetchTasks();
+      if (session) {
+        fetchTasks();
+        fetchProfiles();
+      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) fetchTasks();
+      if (session) {
+        fetchTasks();
+        fetchProfiles();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -91,6 +102,7 @@ function App() {
     <div className="min-h-screen bg-dark-bg flex flex-col font-sans text-text-primary selection:bg-brand/30">
       {/* Toast Notifications */}
       <ToastContainer />
+      <TaskDetailModal />
 
       {/* Enhanced Navbar */}
       <nav className="glass-dark sticky top-0 z-40 border-b border-dark-border/50">
@@ -135,9 +147,14 @@ function App() {
               </div>
             </div>
 
+
+
+
+
             {/* Center: Create Task Button (Desktop) */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
               <FloatingActionButton 
+                isAdmin={!!isAdmin}
                 onCreateTask={(content, priority, columnId) => {
                   useKanbanStore.getState().addTask(columnId, content, priority);
                 }}
@@ -146,9 +163,28 @@ function App() {
 
             {/* Right: User & Mobile Action */}
             <div className="flex items-center gap-6">
+              {/* Admin Toggle */}
+              {isAdmin && (
+                <button
+                  onClick={() => setShowAdminPanel(!showAdminPanel)}
+                  className={`
+                    hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all
+                    ${showAdminPanel 
+                      ? 'bg-brand text-white shadow-neon' 
+                      : 'bg-dark-surface text-text-secondary hover:text-white hover:bg-white/5 border border-dark-border'}
+                  `}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Admin
+                </button>
+              )}
               {/* Mobile Create Button (Visible only on mobile) */}
               <div className="md:hidden">
                 <FloatingActionButton 
+                  isAdmin={!!isAdmin}
                   onCreateTask={(content, priority, columnId) => {
                     useKanbanStore.getState().addTask(columnId, content, priority);
                   }}
@@ -182,17 +218,21 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-8 overflow-hidden">
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar max-w-[1920px] mx-auto h-full items-start pt-4">
-            {columns.map((col) => (
-              <Column
-                key={col.id}
-                column={col}
-                tasks={tasks.filter((t) => t.columnId === col.id)}
-              />
-            ))}
-          </div>
-        </DragDropContext>
+        {showAdminPanel ? (
+          <AdminPanel />
+        ) : (
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar max-w-[1920px] mx-auto h-full items-start pt-4">
+              {columns.map((col) => (
+                <Column
+                  key={col.id}
+                  column={col}
+                  tasks={tasks.filter((t) => t.columnId === col.id)}
+                />
+              ))}
+            </div>
+          </DragDropContext>
+        )}
       </main>
     </div>
   );

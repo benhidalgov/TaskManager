@@ -1,19 +1,24 @@
 import { create } from "zustand";
 import { supabase } from "./supabase";
-import type { Column, Task, Id, Toast, Priority } from "./types";
+import type { Column, Task, Id, Toast, Priority, Profile, Subtask, Comment } from "./types";
 
 interface KanbanState {
   columns: Column[];
   tasks: Task[];
+  profiles: Profile[];
   isLoading: boolean;
+  activeTaskId: Id | null;
   toasts: Toast[];
+  setActiveTask: (id: Id | null) => void;
   addToast: (type: Toast['type'], message: string) => void;
   removeToast: (id: string) => void;
   fetchTasks: () => Promise<void>;
-  addTask: (columnId: Id, content: string, priority?: Priority) => Promise<void>;
+  fetchProfiles: () => Promise<void>;
+  addTask: (columnId: Id, content: string, priority?: Priority, assigneeId?: string) => Promise<void>;
   deleteTask: (id: Id) => Promise<void>;
   updateTask: (id: Id, newContent: string) => Promise<void>;
   updateTaskPriority: (id: Id, newPriority: Priority) => Promise<void>;
+  updateTaskAssignee: (id: Id, newAssigneeId: string | null) => Promise<void>;
   moveTask: (
     taskId: Id,
     sourceColId: Id,
@@ -21,6 +26,19 @@ interface KanbanState {
     sourceIndex: number,
     destIndex: number
   ) => void;
+
+  // New Actions
+  updateTaskDescription: (id: Id, description: string) => Promise<void>;
+  updateTaskDueDate: (id: Id, date: string | null) => Promise<void>;
+
+  fetchSubtasks: (taskId: Id) => Promise<void>;
+  addSubtask: (taskId: Id, content: string) => Promise<void>;
+  toggleSubtask: (subtaskId: string, isCompleted: boolean) => Promise<void>;
+  deleteSubtask: (subtaskId: string) => Promise<void>;
+
+  fetchComments: (taskId: Id) => Promise<void>;
+  addComment: (taskId: Id, content: string) => Promise<void>;
+  deleteComment: (commentId: string) => Promise<void>;
 }
 
 export const useKanbanStore = create<KanbanState>((set, get) => ({
@@ -30,8 +48,12 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     { id: "col-3", title: "Terminado" },
   ],
   tasks: [],
+  profiles: [],
   isLoading: false,
+  activeTaskId: null,
   toasts: [],
+
+  setActiveTask: (id) => set({ activeTaskId: id }),
 
   // Toast actions
   addToast: (type, message) => {
@@ -63,21 +85,25 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       columnId: t.column_id,
       content: t.content,
       priority: t.priority,
+      assigneeId: t.assignee_id,
       createdAt: t.created_at,
       updatedAt: t.updated_at,
+      description: t.description,
+      dueDate: t.due_date,
     }));
 
     set({ tasks: mappedTasks, isLoading: false });
   },
 
   // 2. Agregar Tarea
-  addTask: async (columnId, content, priority = 'medium') => {
+  addTask: async (columnId, content, priority = 'Medio', assigneeId) => {
     const tempId = crypto.randomUUID();
     const newTask: Task = {
       id: tempId,
       columnId,
       content,
       priority,
+      assigneeId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -91,6 +117,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
         column_id: columnId,
         content,
         priority,
+        assignee_id: assigneeId,
       });
 
     if (error) {
@@ -177,6 +204,33 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     }
   },
 
+  // 4c. Actualizar Asignado
+  updateTaskAssignee: async (id, newAssigneeId) => {
+    const previousTasks = get().tasks;
+
+    // Optimistic Update
+    set((state) => ({
+      tasks: state.tasks.map((task) =>
+        task.id === id ? { ...task, assigneeId: newAssigneeId || undefined, updatedAt: new Date().toISOString() } : task
+      ),
+    }));
+
+    // Update en Supabase
+    const { error } = await supabase
+      .from("tasks")
+      .update({ assignee_id: newAssigneeId })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error actualizando asignado:", error);
+      get().addToast('error', 'Error al actualizar el asignado');
+      // Rollback
+      set({ tasks: previousTasks });
+    } else {
+      get().addToast('success', '👤 Asignación actualizada');
+    }
+  },
+
   // 5. Mover Tarea
   moveTask: async (taskId, sourceColId, destColId, sourceIndex, destIndex) => {
     const previousTasks = get().tasks;
@@ -226,4 +280,187 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       }
     }
   },
+
+  // 6. Cargar Perfiles
+  fetchProfiles: async () => {
+    const { data, error } = await supabase.from("profiles").select("*");
+    if (error) {
+      console.error("Error cargando perfiles:", error);
+      return;
+    }
+    set({ profiles: data || [] });
+  },
+
+  // 7. Update Description
+  updateTaskDescription: async (id, description) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === id ? { ...t, description } : t)),
+    }));
+    await supabase.from("tasks").update({ description }).eq("id", id);
+  },
+
+  // 8. Update Due Date
+  updateTaskDueDate: async (id, date) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === id ? { ...t, dueDate: date || undefined } : t)),
+    }));
+    await supabase.from("tasks").update({ due_date: date }).eq("id", id);
+  },
+
+  // 9. Subtasks
+  fetchSubtasks: async (taskId) => {
+    const { data } = await supabase.from("subtasks").select("*").eq("task_id", taskId).order("created_at");
+    if (data) {
+      const mapped: Subtask[] = data.map(s => ({
+        id: s.id,
+        taskId: s.task_id,
+        content: s.content,
+        isCompleted: s.is_completed,
+        createdAt: s.created_at
+      }));
+      set((state) => ({
+        tasks: state.tasks.map(t => t.id === taskId ? { ...t, subtasks: mapped } : t)
+      }));
+    }
+  },
+
+  addSubtask: async (taskId, content) => {
+    const tempId = crypto.randomUUID();
+    const newSubtask: Subtask = {
+      id: tempId,
+      taskId: String(taskId),
+      content,
+      isCompleted: false,
+      createdAt: new Date().toISOString()
+    };
+
+    // Optimistic
+    set((state) => ({
+      tasks: state.tasks.map(t => t.id === taskId ? { ...t, subtasks: [...(t.subtasks || []), newSubtask] } : t)
+    }));
+
+    const { data, error } = await supabase.from("subtasks").insert({
+      task_id: taskId,
+      content
+    }).select().single();
+
+    if (error) {
+      get().addToast('error', 'Error al crear subtarea');
+      // Rollback
+      set((state) => ({
+        tasks: state.tasks.map(t => t.id === taskId ? { ...t, subtasks: t.subtasks?.filter(s => s.id !== tempId) } : t)
+      }));
+    } else if (data) {
+      // Update ID with real one
+      set((state) => ({
+        tasks: state.tasks.map(t => t.id === taskId ? {
+          ...t,
+          subtasks: t.subtasks?.map(s => s.id === tempId ? { ...s, id: data.id } : s)
+        } : t)
+      }));
+    }
+  },
+
+  toggleSubtask: async (subtaskId, isCompleted) => {
+    // Find task containing this subtask
+    const tasks = get().tasks;
+    const task = tasks.find(t => t.subtasks?.some(s => s.id === subtaskId));
+    if (!task) return;
+
+    // Optimistic
+    set((state) => ({
+      tasks: state.tasks.map(t => t.id === task.id ? {
+        ...t,
+        subtasks: t.subtasks?.map(s => s.id === subtaskId ? { ...s, isCompleted } : s)
+      } : t)
+    }));
+
+    await supabase.from("subtasks").update({ is_completed: isCompleted }).eq("id", subtaskId);
+  },
+
+  deleteSubtask: async (subtaskId) => {
+    const tasks = get().tasks;
+    const task = tasks.find(t => t.subtasks?.some(s => s.id === subtaskId));
+    if (!task) return;
+
+    set((state) => ({
+      tasks: state.tasks.map(t => t.id === task.id ? {
+        ...t,
+        subtasks: t.subtasks?.filter(s => s.id !== subtaskId)
+      } : t)
+    }));
+
+    await supabase.from("subtasks").delete().eq("id", subtaskId);
+  },
+
+  // 10. Comments
+  fetchComments: async (taskId) => {
+    const { data } = await supabase.from("comments").select("*").eq("task_id", taskId).order("created_at");
+    if (data) {
+      const mapped: Comment[] = data.map(c => ({
+        id: c.id,
+        taskId: c.task_id,
+        userId: c.user_id,
+        content: c.content,
+        createdAt: c.created_at
+      }));
+      set((state) => ({
+        tasks: state.tasks.map(t => t.id === taskId ? { ...t, comments: mapped } : t)
+      }));
+    }
+  },
+
+  addComment: async (taskId, content) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const tempId = crypto.randomUUID();
+    const newComment: Comment = {
+      id: tempId,
+      taskId: String(taskId),
+      userId: user.id,
+      content,
+      createdAt: new Date().toISOString()
+    };
+
+    set((state) => ({
+      tasks: state.tasks.map(t => t.id === taskId ? { ...t, comments: [...(t.comments || []), newComment] } : t)
+    }));
+
+    const { data, error } = await supabase.from("comments").insert({
+      task_id: taskId,
+      user_id: user.id,
+      content
+    }).select().single();
+
+    if (error) {
+      get().addToast('error', 'Error al comentar');
+      set((state) => ({
+        tasks: state.tasks.map(t => t.id === taskId ? { ...t, comments: t.comments?.filter(c => c.id !== tempId) } : t)
+      }));
+    } else if (data) {
+      set((state) => ({
+        tasks: state.tasks.map(t => t.id === taskId ? {
+          ...t,
+          comments: t.comments?.map(c => c.id === tempId ? { ...c, id: data.id } : c)
+        } : t)
+      }));
+    }
+  },
+
+  deleteComment: async (commentId) => {
+    const tasks = get().tasks;
+    const task = tasks.find(t => t.comments?.some(c => c.id === commentId));
+    if (!task) return;
+
+    set((state) => ({
+      tasks: state.tasks.map(t => t.id === task.id ? {
+        ...t,
+        comments: t.comments?.filter(c => c.id !== commentId)
+      } : t)
+    }));
+
+    await supabase.from("comments").delete().eq("id", commentId);
+  },
+
 }));
