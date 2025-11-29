@@ -13,7 +13,7 @@ const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
   const { profiles } = useKanbanStore();
   const [showModal, setShowModal] = useState(false);
   const [taskContent, setTaskContent] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState<Priority>("medium");
+  const [selectedPriority, setSelectedPriority] = useState<Priority>("Medio");
   const [selectedColumn, setSelectedColumn] = useState("col-1");
   const [selectedAssignee, setSelectedAssignee] = useState<string>("");
 
@@ -21,7 +21,7 @@ const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
     if (taskContent.trim() && onCreateTask) {
       onCreateTask(taskContent, selectedPriority, selectedColumn, selectedAssignee || undefined);
       setTaskContent("");
-      setSelectedPriority("medium");
+      setSelectedPriority("Medio");
       setSelectedColumn("col-1");
       setSelectedAssignee("");
       setShowModal(false);
@@ -137,7 +137,7 @@ const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
                 Prioridad
               </label>
               <div className="flex gap-3">
-                {(['high', 'medium', 'low'] as Priority[]).map((p) => (
+                {(['Alto', 'Medio', 'Bajo'] as Priority[]).map((p) => (
                   <button
                     key={p}
                     type="button"
@@ -146,8 +146,8 @@ const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
                       flex-1 flex items-center justify-center gap-2
                       px-4 py-2.5 rounded-lg text-sm font-medium transition-all border
                       ${selectedPriority === p 
-                        ? p === 'high' ? 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
-                        : p === 'medium' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.3)]'
+                        ? p === 'Alto' ? 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
+                        : p === 'Medio' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.3)]'
                         : 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                         : 'bg-dark-surface border-dark-border text-text-tertiary hover:text-white hover:border-text-tertiary'
                       }
@@ -155,9 +155,9 @@ const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
                   >
                     <div className={`
                       w-2 h-2 rounded-full
-                      ${p === 'high' ? 'bg-red-500' : p === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}
+                      ${p === 'Alto' ? 'bg-red-500' : p === 'Medio' ? 'bg-yellow-500' : 'bg-green-500'}
                     `} />
-                    {p === 'high' ? 'Alta' : p === 'medium' ? 'Media' : 'Baja'}
+                    {p === 'Alto' ? 'Alta' : p === 'Medio' ? 'Media' : 'Baja'}
                   </button>
                 ))}
               </div>

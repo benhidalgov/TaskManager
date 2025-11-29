@@ -7,6 +7,7 @@ import Login from "./componentes/login";
 import ToastContainer from "./componentes/ToastContainer";
 import FloatingActionButton from "./componentes/FloatingActionButton";
 import AdminPanel from "./componentes/AdminPanel";
+import TaskDetailModal from "./componentes/TaskDetailModal";
 import { supabase } from "./supabase";
 
 function App() {
@@ -101,6 +102,7 @@ function App() {
     <div className="min-h-screen bg-dark-bg flex flex-col font-sans text-text-primary selection:bg-brand/30">
       {/* Toast Notifications */}
       <ToastContainer />
+      <TaskDetailModal />
 
       {/* Enhanced Navbar */}
       <nav className="glass-dark sticky top-0 z-40 border-b border-dark-border/50">

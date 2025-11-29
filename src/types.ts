@@ -1,6 +1,22 @@
 export type Id = string | number;
 
-export type Priority = 'high' | 'medium' | 'low';
+export type Priority = 'Alto' | 'Medio' | 'Bajo';
+
+export interface Subtask {
+    id: string;
+    taskId: string;
+    content: string;
+    isCompleted: boolean;
+    createdAt: string;
+}
+
+export interface Comment {
+    id: string;
+    taskId: string;
+    userId: string;
+    content: string;
+    createdAt: string;
+}
 
 export interface Task {
     id: Id;
@@ -8,6 +24,10 @@ export interface Task {
     content: string;
     priority?: Priority;
     assigneeId?: string;
+    description?: string;
+    dueDate?: string;
+    subtasks?: Subtask[];
+    comments?: Comment[];
     createdAt?: string;
     updatedAt?: string;
 }

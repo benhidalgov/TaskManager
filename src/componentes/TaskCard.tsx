@@ -9,7 +9,7 @@ interface Props {
 }
 
 const TaskCard = ({ task, index }: Props) => {
-  const { deleteTask, updateTask, updateTaskPriority, profiles } = useKanbanStore();
+  const { deleteTask, updateTask, updateTaskPriority, profiles, setActiveTask } = useKanbanStore();
   
   const assignee = profiles.find(p => p.id === task.assigneeId);
   
@@ -55,18 +55,18 @@ const TaskCard = ({ task, index }: Props) => {
   // Priority color dot
   const getPriorityColor = () => {
     switch (task.priority) {
-      case 'high': return 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]';
-      case 'medium': return 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]';
-      case 'low': return 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
+      case 'Alto': return 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]';
+      case 'Medio': return 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]';
+      case 'Bajo': return 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
       default: return 'bg-zinc-500';
     }
   };
 
   const getPriorityLabel = () => {
     switch (task.priority) {
-      case 'high': return 'Alta';
-      case 'medium': return 'Media';
-      case 'low': return 'Baja';
+      case 'Alto': return 'Alta';
+      case 'Medio': return 'Media';
+      case 'Bajo': return 'Baja';
       default: return 'Sin prioridad';
     }
   };
@@ -96,6 +96,7 @@ const TaskCard = ({ task, index }: Props) => {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          onClick={() => setActiveTask(task.id)}
           onDoubleClick={() => setIsEditing(true)}
           className={`
             group relative
@@ -149,7 +150,7 @@ const TaskCard = ({ task, index }: Props) => {
                     <div className="text-xs font-bold text-brand mb-2 px-2 uppercase tracking-wider">
                       Prioridad
                     </div>
-                    {(['high', 'medium', 'low'] as Priority[]).map((p) => (
+                    {(['Alto', 'Medio', 'Bajo'] as Priority[]).map((p) => (
                       <button
                         key={p}
                         onClick={(e) => {
@@ -164,10 +165,10 @@ const TaskCard = ({ task, index }: Props) => {
                       >
                         <div className={`
                           w-2 h-2 rounded-full
-                          ${p === 'high' ? 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]' : p === 'medium' ? 'bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]' : 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]'}
+                          ${p === 'Alto' ? 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]' : p === 'Medio' ? 'bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]' : 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]'}
                         `} />
                         <span className="text-sm text-text-primary font-medium flex-1">
-                          {p === 'high' ? 'Alta' : p === 'medium' ? 'Media' : 'Baja'}
+                          {p === 'Alto' ? 'Alta' : p === 'Medio' ? 'Media' : 'Baja'}
                         </span>
                       </button>
                     ))}

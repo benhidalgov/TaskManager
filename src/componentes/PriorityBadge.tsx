@@ -5,23 +5,23 @@ interface Props {
   size?: 'sm' | 'md';
 }
 
-const PriorityBadge = ({ priority = 'medium', size = 'sm' }: Props) => {
+const PriorityBadge = ({ priority = 'Medio', size = 'sm' }: Props) => {
   if (!priority) return null;
 
   const styles = {
-    high: {
+    Alto: {
       bg: 'bg-red-500/10',
       text: 'text-red-400',
       border: 'border-red-500/30',
       glow: 'shadow-[0_0_8px_-2px_rgba(239,68,68,0.5)]',
     },
-    medium: {
+    Medio: {
       bg: 'bg-yellow-500/10',
       text: 'text-yellow-400',
       border: 'border-yellow-500/30',
       glow: 'shadow-[0_0_8px_-2px_rgba(234,179,8,0.5)]',
     },
-    low: {
+    Bajo: {
       bg: 'bg-green-500/10',
       text: 'text-green-400',
       border: 'border-green-500/30',
