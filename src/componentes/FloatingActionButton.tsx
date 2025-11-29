@@ -6,9 +6,10 @@ import { useKanbanStore } from "../store";
 
 interface Props {
   onCreateTask?: (content: string, priority: Priority, columnId: string, assigneeId?: string) => void;
+  isAdmin?: boolean;
 }
 
-const CreateTaskButton = ({ onCreateTask }: Props) => {
+const CreateTaskButton = ({ onCreateTask, isAdmin = false }: Props) => {
   const { profiles } = useKanbanStore();
   const [showModal, setShowModal] = useState(false);
   const [taskContent, setTaskContent] = useState("");
@@ -162,30 +163,32 @@ const CreateTaskButton = ({ onCreateTask }: Props) => {
               </div>
             </div>
 
-            {/* Assignee Selection */}
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Asignar a (Opcional)
-              </label>
-              <select
-                value={selectedAssignee}
-                onChange={(e) => setSelectedAssignee(e.target.value)}
-                className="
-                  w-full p-3 rounded-xl
-                  bg-dark-surface border border-dark-border
-                  text-white
-                  focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20
-                  transition-all
-                "
-              >
-                <option value="">Sin asignar</option>
-                {profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.email} ({profile.role === 'admin' ? 'Jefe' : 'Colaborador'})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Assignee Selection - Only for Admins */}
+            {isAdmin && (
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Asignar a (Opcional)
+                </label>
+                <select
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                  className="
+                    w-full p-3 rounded-xl
+                    bg-dark-surface border border-dark-border
+                    text-white
+                    focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20
+                    transition-all
+                  "
+                >
+                  <option value="">Sin asignar</option>
+                  {profiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.email} ({profile.role === 'admin' ? 'Jefe' : 'Colaborador'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-3 sticky bottom-0 bg-dark-card pt-4 border-t border-dark-border/50">

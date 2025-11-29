@@ -16,6 +16,7 @@ interface KanbanState {
   deleteTask: (id: Id) => Promise<void>;
   updateTask: (id: Id, newContent: string) => Promise<void>;
   updateTaskPriority: (id: Id, newPriority: Priority) => Promise<void>;
+  updateTaskAssignee: (id: Id, newAssigneeId: string | null) => Promise<void>;
   moveTask: (
     taskId: Id,
     sourceColId: Id,
@@ -180,6 +181,33 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       set({ tasks: previousTasks });
     } else {
       get().addToast('success', '🎯 Prioridad actualizada');
+    }
+  },
+
+  // 4c. Actualizar Asignado
+  updateTaskAssignee: async (id, newAssigneeId) => {
+    const previousTasks = get().tasks;
+
+    // Optimistic Update
+    set((state) => ({
+      tasks: state.tasks.map((task) =>
+        task.id === id ? { ...task, assigneeId: newAssigneeId || undefined, updatedAt: new Date().toISOString() } : task
+      ),
+    }));
+
+    // Update en Supabase
+    const { error } = await supabase
+      .from("tasks")
+      .update({ assignee_id: newAssigneeId })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error actualizando asignado:", error);
+      get().addToast('error', 'Error al actualizar el asignado');
+      // Rollback
+      set({ tasks: previousTasks });
+    } else {
+      get().addToast('success', '👤 Asignación actualizada');
     }
   },
 
