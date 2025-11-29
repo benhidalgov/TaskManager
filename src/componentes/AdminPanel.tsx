@@ -81,17 +81,17 @@ const AdminPanel = () => {
                   </td>
                   <td className="p-4">
                     <select
-                      value={task.priority || 'medium'}
+                      value={task.priority || 'Medio'}
                       onChange={(e) => updateTaskPriority(task.id, e.target.value as Priority)}
                       className={`
                         bg-transparent border-none text-sm font-medium cursor-pointer focus:ring-0
-                        ${task.priority === 'high' ? 'text-red-400' : 
-                          task.priority === 'medium' ? 'text-yellow-400' : 'text-green-400'}
+                        ${task.priority === 'Alto' ? 'text-red-400' : 
+                          task.priority === 'Medio' ? 'text-yellow-400' : 'text-green-400'}
                       `}
                     >
-                      <option value="high" className="bg-dark-card text-red-400">Alta</option>
-                      <option value="medium" className="bg-dark-card text-yellow-400">Media</option>
-                      <option value="low" className="bg-dark-card text-green-400">Baja</option>
+                      <option value="Alto" className="bg-dark-card text-red-400">Alta</option>
+                      <option value="Medio" className="bg-dark-card text-yellow-400">Media</option>
+                      <option value="Bajo" className="bg-dark-card text-green-400">Baja</option>
                     </select>
                   </td>
                   <td className="p-4">
